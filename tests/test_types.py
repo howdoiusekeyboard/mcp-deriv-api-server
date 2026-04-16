@@ -39,8 +39,9 @@ class TestProposalRequest:
 
     def test_rejects_zero_duration(self):
         import pytest
+        from pydantic import ValidationError
 
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             ProposalRequest(
                 contract_type="CALL",
                 symbol="R_100",
@@ -51,8 +52,9 @@ class TestProposalRequest:
 
     def test_rejects_negative_amount(self):
         import pytest
+        from pydantic import ValidationError
 
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             ProposalRequest(
                 contract_type="CALL",
                 symbol="R_100",
