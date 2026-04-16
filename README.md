@@ -1,92 +1,93 @@
-# Deriv API Server
+# Deriv API MCP Server
 
-A Model Context Protocol (MCP) server and OpenAI function calling service for interacting with the Deriv API.
+An MCP server for the Deriv trading API. Provides real-time market data, portfolio management, and contract pricing through a persistent WebSocket connection.
 
-## Features
+## Tools
 
-- Active symbols list
-- Get Account Balance
+| Tool | Description |
+|------|-------------|
+| `get_active_symbols` | List tradable symbols on the Deriv platform |
+| `get_account_balance` | Current account balance and currency |
+| `get_portfolio` | Active contracts and open positions |
+| `get_proposal` | Price quote for a trading contract (CALL, PUT, MULTUP, etc.) |
+| `subscribe_ticks` | Start receiving real-time tick data for a symbol |
+| `get_latest_ticks` | Read the latest ticks from the buffer (no API call) |
+| `unsubscribe_ticks` | Stop a tick subscription and free its buffer |
+
+## Configuration
+
+Create a `.env` file in the project root:
+
+```env
+DERIV_API_TOKEN=your_token_here
+DERIV_APP_ID=1089
+```
+
+Get an API token at [app.deriv.com/account/api-token](https://app.deriv.com/account/api-token). The default `APP_ID` (1089) works for development.
 
 ## Installation
 
-### Local Installation
+### Local (uv)
 
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
+uv sync
 ```
 
-### Docker Installation
+### Docker
 
-1. Build the Docker image:
 ```bash
 docker build -t deriv-api-mcp .
 ```
 
-## Environment Setup
-
-Create a `.env` file in your project root:
-
-```env
-DERIV_API_TOKEN=your_api_key_here
-```
-
 ## Usage with Claude Desktop
 
-Claude Desktop provides full support for MCP features. To use this server:
+Add to your Claude Desktop config:
 
-1. Install [Claude Desktop](https://claude.ai/download)
+**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 
-2. Add to your Claude Desktop configuration:
-   - On macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-   - On cline VSCode: `/Users/raju/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
-   - On Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+### Local
 
-### For Local Installation
 ```json
 {
   "mcpServers": {
     "deriv-api-mcp": {
       "command": "uv",
-      "args": [
-        "--directory",
-        "/Users/raju/Sites/deriv/mcp-deriv-api-server",
-        "run",
-        "server.py"
-      ]
+      "args": ["--directory", "/path/to/mcp-deriv-api-server", "run", "python", "-m", "deriv_mcp.server"]
     }
   }
 }
 ```
 
-### For Docker Installation
+### Docker
+
 ```json
 {
   "mcpServers": {
     "deriv-api-mcp": {
       "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-i",
-        "deriv-api-mcp"
-      ]
+      "args": ["run", "--rm", "-i", "--env-file", ".env", "deriv-api-mcp"]
     }
   }
 }
 ```
 
-3. Restart Claude Desktop
+## Architecture
 
-The server provides the following tools:
-- `get_active_symbols`: Get a list of active trading symbols
-- `get_account_balance`: Get the current account balance
+The server maintains a single persistent WebSocket connection to the Deriv API, shared across all tool calls. Key design decisions:
 
-## Usage with OpenAI Function Calling
+- **Singleton connection** -- One `DerivAPI` instance multiplexes all requests and subscriptions over a single socket, avoiding redundant TLS handshakes and rate limit pressure.
+- **Auto-reconnection** -- On connection drop, exponential backoff (1s to 30s cap) retries indefinitely until the socket is restored.
+- **Subscription recovery** -- Active tick subscriptions are automatically re-established after reconnection, keeping the ring buffers populated without manual intervention.
+- **Bounded tick buffers** -- Each subscribed symbol stores up to 50 ticks in a `collections.deque`, preventing unbounded memory growth from high-frequency streams.
 
+## Development
 
-## Rate Limits
-
-Please refer to the [Deriv API documentation](https://api.deriv.com) for current rate limits and usage guidelines.
+```bash
+uv sync --all-groups
+uv run pytest
+uv run ruff check deriv_mcp/
+```
 
 ## License
 
