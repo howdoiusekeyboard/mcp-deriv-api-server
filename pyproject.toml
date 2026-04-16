@@ -1,11 +1,27 @@
 [project]
 name = "deriv-api-mcp"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.2.0"
+description = "MCP server for the Deriv trading API — real-time ticks, contract proposals, and portfolio management"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "mcp[cli]>=1.2.0",
+    "mcp[cli]>=1.2.0,<2.0",
     "python-deriv-api>=0.1.6",
     "python-dotenv>=1.0.1",
 ]
+
+[project.scripts]
+deriv-mcp = "deriv_mcp.server:main"
+
+[dependency-groups]
+dev = ["ruff>=0.9", "pytest>=8.0", "pytest-asyncio>=0.24"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "TCH"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
