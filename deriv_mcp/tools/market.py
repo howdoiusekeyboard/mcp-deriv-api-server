@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from mcp.server.fastmcp import Context  # noqa: TC002 — runtime import, FastMCP inspects this
+
 from deriv_mcp.errors import handle_deriv_errors
 from deriv_mcp.types import ActiveSymbol
 
 if TYPE_CHECKING:
-    from mcp.server.fastmcp import Context
-
     from deriv_mcp.connection import DerivAPIManager
 
 
