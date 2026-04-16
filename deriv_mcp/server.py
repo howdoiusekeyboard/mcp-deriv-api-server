@@ -31,10 +31,7 @@ def _read_config() -> tuple[str, str]:
     """Read and validate environment configuration."""
     api_token = os.getenv("DERIV_API_TOKEN", "")
     if not api_token:
-        msg = (
-            "DERIV_API_TOKEN is required. "
-            "Get one at https://app.deriv.com/account/api-token"
-        )
+        msg = "DERIV_API_TOKEN is required. Get one at https://app.deriv.com/account/api-token"
         raise ValueError(msg)
 
     app_id = os.getenv("DERIV_APP_ID", "1089")

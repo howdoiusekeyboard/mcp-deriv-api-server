@@ -3,7 +3,6 @@ from unittest.mock import patch
 import pytest
 
 from deriv_mcp.connection import TICK_BUFFER_SIZE, DerivAPIManager
-
 from tests.conftest import MockObservable, make_mock_api
 
 
@@ -86,10 +85,12 @@ class TestTickSubscriptions:
             await manager.connect()
             await manager.subscribe_ticks("R_100")
 
-        observable.on_next_callback({
-            "tick": {"symbol": "R_100", "epoch": 1713300000, "quote": 1234.56},
-            "subscription": {"id": "sub_123"},
-        })
+        observable.on_next_callback(
+            {
+                "tick": {"symbol": "R_100", "epoch": 1713300000, "quote": 1234.56},
+                "subscription": {"id": "sub_123"},
+            }
+        )
 
         ticks = manager.get_tick_buffer("R_100")
         assert len(ticks) == 1
@@ -106,9 +107,11 @@ class TestTickSubscriptions:
             await manager.subscribe_ticks("R_100")
 
         for i in range(TICK_BUFFER_SIZE + 20):
-            observable.on_next_callback({
-                "tick": {"symbol": "R_100", "epoch": 1713300000 + i, "quote": float(i)},
-            })
+            observable.on_next_callback(
+                {
+                    "tick": {"symbol": "R_100", "epoch": 1713300000 + i, "quote": float(i)},
+                }
+            )
 
         ticks = manager.get_tick_buffer("R_100")
         assert len(ticks) == TICK_BUFFER_SIZE

@@ -34,8 +34,7 @@ def register(mcp):
             )
 
         symbols = [
-            ActiveSymbol.model_validate(s).model_dump()
-            for s in response.get("active_symbols", [])
+            ActiveSymbol.model_validate(s).model_dump() for s in response.get("active_symbols", [])
         ]
         return symbols
 
@@ -57,9 +56,7 @@ def register(mcp):
         return f"Subscribed to {symbol}. Use get_latest_ticks to read tick data."
 
     @mcp.tool()
-    async def get_latest_ticks(
-        ctx: Context, symbol: str, count: int = 10
-    ) -> list[dict]:
+    async def get_latest_ticks(ctx: Context, symbol: str, count: int = 10) -> list[dict]:
         """Get the latest ticks from the buffer for a subscribed symbol.
 
         Returns cached data from the ring buffer — no API call is made.

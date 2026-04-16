@@ -231,6 +231,7 @@ class DerivAPIManager:
 
         Uses a factory to avoid closure-variable capture issues in loops.
         """
+
         def on_tick(data: dict) -> None:
             if "tick" in data:
                 tick = data["tick"]
